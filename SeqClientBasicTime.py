@@ -1,0 +1,45 @@
+import urllib2
+import time
+from datetime import datetime
+
+
+#proxy_support = urllib2.ProxyHandler({"http" : "155.98.39.24:3128"})
+proxy_support = urllib2.ProxyHandler({"http" : "127.0.0.1:6789"})
+opener = urllib2.build_opener(proxy_support) 
+
+text = open("SeqClientBasicTime.txt",'a')
+
+
+
+for i in range(0, 1):
+
+
+    start = time.time()
+
+
+#    urllib2.install_opener(opener)
+#    request = urllib2.urlopen("http://en.wikipedia.org/")
+#    request.add_header('User-Agent','no-cache')
+#    print request.info()
+#    start = time.time()
+#    
+#    content = request.read()
+    
+    proxy_support = urllib2.ProxyHandler({"http" : "127.0.0.1:6789"})
+    urllib2.install_opener(opener)
+
+    request = urllib2.Request("http://en.wikipedia.org/wiki/Main_Page")
+    #request = urllib2.Request("http://www.daum.net")	
+    request.add_header('Pragma','no-store,no-cache,must-revalidate')
+    request.add_header('Cache-Control', 'no-cache')
+    
+    
+    content = urllib2.build_opener(proxy_support).open(request)
+    contrd = content.read()
+ 
+    end = time.time()
+    result = end - start
+    now = datetime.now()
+    text.write("\n%s   %s\n" % (result,now))
+
+

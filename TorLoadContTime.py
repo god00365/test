@@ -1,0 +1,88 @@
+from multiprocessing import Process, Pool
+import urllib2
+from TorCtl import TorCtl
+import time
+from datetime import datetime
+
+import requests
+import re
+#import grequests
+
+#proxy_support = urllib2.ProxyHandler({"http" : "127.0.0.1:8118"})
+#opener = urllib2.build_opener(proxy_support) 
+#
+text = open("TorLoadContTime.txt",'a')
+
+def newId():
+    conn = TorCtl.connect(controlAddr="127.0.0.1", controlPort=9051, passphrase="")
+    conn.send_signal("NEWNYM") #torconnection
+
+
+def http_get(image):
+	
+	result = {"url": image, "data": requests.get(image, headers=headers,proxies=proxies)}
+	return result
+
+#for i in range(0, 4):
+#    order = "case " + str(i+1)
+#    text.write(order)
+#    newId()
+#    proxy_support = urllib2.ProxyHandler({"http" : "127.0.0.1:8118"})
+#    urllib2.install_opener(opener)
+#    start = time.time()
+#    
+#    request = urllib2.Request("http://en.wikipedia.org/wiki/Main_Page")
+#    request.add_header('Pragma','no-cache')
+#    request.add_header('User-agent', 'Mozilla/5.0')
+#    
+#    content = urllib2.build_opener(proxy_support).open(request).read()
+#     
+#    end = time.time()
+#
+#    #print content
+#    result = end - start
+#    
+#    now = datetime.now()
+#    text.write("\n%s sec  %s\n" % (result,now))
+
+
+for i in range(0, 5):
+
+	newId()
+	start1 = time.time()
+	
+	headers = {'cache-control':'no-cache'}
+	proxies = {"http":"http://127.0.0.1:8118",}
+	website = requests.get('http://en.wikipedia.org/wiki/Main_Page', headers=headers,proxies=proxies) #html load
+	#website = requests.get('http://www.daum.net', headers=headers)#html load
+	end1 = time.time()
+
+	timer1 = end1 - start1 #base html load time
+
+	html = website.text
+	pat = re.compile(r'<\s*img [^>]*src="([^"]+)')
+	img = pat.findall(html)
+
+	imglen = len(img)
+
+	for num in range(0,imglen) :
+		img[num] = 'http:'+img[num]
+	#print "%s \n" % (img[num])
+	
+
+	
+	proxy = urllib2.ProxyHandler({'http': '127.0.0.1:8118/'})
+	opener = urllib2.build_opener(proxy) 
+	
+	start2 = time.time()
+	pool = Pool(processes = imglen)
+
+	results = pool.map(http_get, img)
+	#for result in results:
+		#print result
+	end2 = time.time()
+	timer2 = end2 - start2 #timecheck for image
+	
+	res = timer1 + timer2
+	
+	text.write("\n%s\n" % (res))
